@@ -1,4 +1,4 @@
-# ESPHome Environment Server
+# ESPHome Environment Sensor
 
 An [ESPHome](https://esphome.io/) sensor for CO2, temperature, and humidity.
 
