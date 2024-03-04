@@ -1,0 +1,6 @@
+.DS_Store
+.esphome/
+.vscode
+*.rsls*
+*.zip
+secrets.yaml

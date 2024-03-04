@@ -1,0 +1,108 @@
+esphome:
+  name: environment-sensor
+  friendly_name: environment sensor
+  includes:
+    - colour_funcs.h
+  on_boot:
+    then:
+      - light.turn_on:
+          id: co2_led
+          brightness: 100%
+          red: 0%
+          green: 0%
+          blue: 100%
+          effect: "Slow Pulse"
+
+esp8266:
+  board: d1_mini
+
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_key
+  services:
+    - service: calibrate_co2_value
+      then:
+      - scd4x.perform_forced_calibration:
+          id: my_scd4x
+          value: 425
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Environment Sensor Fallback"
+    password: !secret ap_password
+
+captive_portal:
+
+i2c:
+
+output:
+  - platform: esp8266_pwm
+    id: red_led_pin
+    pin: GPIO0
+  - platform: esp8266_pwm
+    id: green_led_pin
+    pin: GPIO16
+  - platform: esp8266_pwm
+    id: blue_led_pin
+    pin: GPIO3
+
+light:
+  - platform: rgb
+    name: "CO2 Level"
+    id: co2_led
+    red: red_led_pin
+    green: green_led_pin
+    blue: blue_led_pin
+    effects:
+      - pulse:
+          name: "Slow Pulse"
+          transition_length:
+            on_length: 1s
+            off_length: 3s
+          update_interval: 2s
+          min_brightness: 30%
+          max_brightness: 100%
+
+sensor:
+  - platform: scd4x
+    id: my_scd4x
+    update_interval: 60s
+    
+    temperature:
+      name: "Temperature"
+   
+    humidity:
+      name: "Humidity"
+    
+    co2:
+      name: "CO2"
+      id: co2_sensor
+      on_value:
+        then:
+        - lambda: |-
+            
+            int hue;
+            int saturation = 255;
+            int brightness = 255;
+            float rgb_colours[3];
+      
+            float co2_ppm = id(co2_sensor).state;
+            hue = co2ToHue(co2_ppm);
+            getRGB(hue, saturation, brightness, rgb_colours);
+
+            auto light = id(co2_led).turn_on();
+            light.set_rgb(rgb_colours[0], rgb_colours[1], rgb_colours[2]);
+            light.perform();
+          

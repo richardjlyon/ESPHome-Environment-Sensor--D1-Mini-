@@ -1,0 +1,8 @@
+site_name: ESPHome Environment Server
+nav:
+  - Home: index.md
+  - Schematic: schematic.md
+  - Fusion 360 Model: fusion360.md
+  - 3D Printer Files: 3dprinter.md
+
+theme: readthedocs
